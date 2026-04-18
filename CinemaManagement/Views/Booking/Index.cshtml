@@ -1,0 +1,74 @@
+﻿@model CinemaManagement.ViewModels.BookingViewModel
+
+<div class="container mt-5">
+    @if (Model?.Showtimes == null || !Model.Showtimes.Any())
+    {
+        <div class="alert alert-warning text-center">
+            🚨 Không tìm thấy suất chiếu nào cho phim này!
+        </div>
+    }
+    else
+    {
+        var firstShowtime = Model.Showtimes.FirstOrDefault();
+        var movie = firstShowtime?.Movie;
+
+        <div class="row">
+            <div class="col-md-4">
+                <img src="@movie?.PosterUrl" alt="@movie?.Title" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-md-8">
+                <h2 class="fw-bold">🎬 @movie?.Title</h2>
+                <p class="text-muted">
+                    <strong>Thể loại:</strong>
+                    @if (movie?.MovieGenres?.Any() == true)
+                    {
+                        foreach (var genre in movie.MovieGenres)
+                        {
+                            <span class="badge bg-secondary">@genre.Genre.Name</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-danger">Chưa có thể loại</span>
+                    }
+                </p>
+                <p class="lead">@movie?.Description</p>
+            </div>
+        </div>
+
+        
+
+        <div class="mt-4">
+            <h4 class="text-center">📅 Chọn suất chiếu</h4>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                @foreach (var showtime in Model.Showtimes)
+                {
+                    <div class="col">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body text-center">
+                                <h5 class="fw-bold">🏢 @showtime.Room.Theater.Name</h5>
+                                <p class="fw-bold text-primary">⏰ @showtime.StartTime.ToString("dd/MM/yyyy HH:mm")</p>
+                                <a asp-controller="Booking" asp-action="SelectSeats" asp-route-showtimeId="@showtime.ShowtimeId"
+                                   class="btn btn-success w-100 shadow-sm">
+                                    🎟 Đặt vé ngay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+</style>

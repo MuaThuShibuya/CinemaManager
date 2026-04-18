@@ -1,0 +1,48 @@
+﻿@model CinemaManagement.Models.Genre
+@{
+    ViewData["Title"] = "Chỉnh sửa thể loại";
+}
+
+<h2 class="mb-3">✏️ Chỉnh sửa thể loại</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="GenreId" />
+
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label">Tên thể loại</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Cập nhật</button>
+    <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+        🗑️ Xoá
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">🔙 Quay lại</a>
+</form>
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="DeleteConfirmed" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Xác nhận xoá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc muốn xoá thể loại "<strong>@Model.Name</strong>" không?
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" asp-for="GenreId" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xoá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

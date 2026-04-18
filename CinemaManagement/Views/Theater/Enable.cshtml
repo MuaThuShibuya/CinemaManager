@@ -1,0 +1,29 @@
+@model CinemaManagement.Models.Theater
+
+@{
+    ViewData["Title"] = "Xác nhận kích hoạt rạp";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-success"><i class="bi bi-check-circle"></i> Xác nhận kích hoạt rạp</h2>
+
+    <div class="alert alert-success shadow-sm">
+        <h4>Bạn có chắc chắn muốn bật lại rạp <strong>@Model.Name</strong>?</h4>
+        <p class="mb-0">Rạp sẽ hiển thị và có thể sử dụng cho các suất chiếu mới.</p>
+    </div>
+
+    @* Gửi đến Action EnableConfirmed thông qua Alias "Enable" *@
+    <form asp-action="Enable" asp-controller="Theater" method="post">
+        @* Quan trọng: name="id" phải khớp với tham số truyền vào hàm EnableConfirmed *@
+        <input type="hidden" name="id" value="@Model.TheaterId" />
+
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> Xác nhận bật lại
+            </button>
+            <a asp-action="Index" asp-controller="Theater" class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Hủy bỏ
+            </a>
+        </div>
+    </form>
+</div>

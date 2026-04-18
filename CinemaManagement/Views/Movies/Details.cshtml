@@ -1,0 +1,299 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model CinemaManagement.Models.Movie
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    // Đảm bảo Model.Showtimes đã được Include đầy đủ Room và Theater trong Controller
+    var showtimes = Model.Showtimes ?? new List<CinemaManagement.Models.Showtime>();
+    var dates = showtimes.Select(s => s.StartTime.Date)
+                         .Distinct()
+                         .OrderBy(d => d)
+                         .ToList();
+    var cities = showtimes.Select(s => s.Room?.Theater?.City)
+                          .Where(c => !string.IsNullOrEmpty(c))
+                          .Distinct()
+                          .OrderBy(c => c)
+                          .ToList();
+}
+
+<meta charset="utf-8" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    body {
+        background-color: #f0f0f0;
+    }
+
+    .main-card {
+        background-color: #fff;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .movie-poster-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        border: 1px solid #ddd;
+    }
+
+    .booking-filters {
+        background: #222;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #showtimeModal .modal-dialog {
+        max-width: 900px;
+        width: 95%;
+    }
+
+    #showtimeModal .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .date-scroller, .city-scroller {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .date-item, .city-item {
+        min-width: 90px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #444;
+        background: #333;
+        color: #fff;
+        text-align: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+        .date-item.active, .city-item.active {
+            background: #ff4d4d;
+            border-color: #ff4d4d;
+        }
+
+    .showtime-group {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+    }
+
+    .showtime-button {
+        display: inline-block;
+        padding: 8px 12px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ff4d4d;
+        border-radius: 6px;
+        color: #ff4d4d;
+        font-weight: bold;
+    }
+
+        .showtime-button:hover {
+            background-color: #ff4d4d;
+            color: #fff;
+            text-decoration: none;
+        }
+
+    .star-rating {
+        display: inline-flex;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .star {
+        color: #ccc;
+    }
+
+        .star.selected, .star.hovered {
+            color: gold;
+        }
+
+    .theater-header {
+        border-bottom: 2px solid #ff4d4d;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        @* BÊN TRÁI: POSTER & THÔNG TIN *@
+        <div class="col-lg-4 col-md-5">
+            <div class="movie-poster-container mb-4">
+                <img src="@Model.PosterUrl" class="w-100 object-fit-cover" style="height: 500px;" alt="@Model.Title" />
+            </div>
+
+            <div class="main-card p-4">
+                <h4 class="text-center fw-bold mb-3" style="color: #ff4d4d;">🎬 @Model.Title</h4>
+                <p class="text-muted text-center mb-2">
+                    <strong>Thời lượng:</strong> @Model.Duration phút |
+                    <strong>Ngày khởi chiếu:</strong> @Model.ReleaseDate.ToString("dd/MM/yyyy")
+                </p>
+                <div class="text-center mb-3">
+                    @if (Model.MovieGenres != null)
+                    {
+                        foreach (var genre in Model.MovieGenres)
+                        {
+                            <span class="badge bg-danger me-1">@genre.Genre.Name</span>
+                        }
+                    }
+                </div>
+
+                <div class="text-center border-top pt-3">
+                    <p class="text-warning fs-4 mb-1">⭐ @Model.Rating / 10</p>
+                    <form method="post" asp-action="RateMovie" asp-controller="Movies" class="d-inline-block">
+                        <input type="hidden" name="movieId" value="@Model.MovieId" />
+                        <input type="hidden" id="selectedRating" name="rating" value="0" />
+                        <div class="star-rating justify-content-center mb-2" id="starRating">
+                            @for (int i = 1; i <= 10; i++)
+                            {
+                                <span class="star" data-value="@i">&#9733;</span>
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Gửi đánh giá</button>
+                    </form>
+                </div>
+            </div>
+
+            @inject UserManager<ApplicationUser> UserManager
+            @{
+                var user = UserManager.GetUserAsync(User).Result;
+                var isAdmin = user != null && UserManager.IsInRoleAsync(user, "Admin").Result;
+            }
+
+            @if (!isAdmin)
+            {
+                <div class="text-center mt-3">
+                    <button id="buyTicketBtn" class="btn btn-danger btn-lg w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#showtimeModal">
+                        <i class="bi bi-ticket-fill"></i> MUA VÉ NGAY
+                    </button>
+                </div>
+            }
+        </div>
+
+        @* BÊN PHẢI: TRAILER & MÔ TẢ *@
+        <div class="col-lg-8 col-md-7">
+            <div class="main-card mb-4 p-0 overflow-hidden">
+                @* Sửa đổi quan trọng: Sử dụng Model.VideoUrl và class ratio 16:9 giống Manager *@
+                <div class="ratio ratio-16x9">
+                    <iframe src="@Model.VideoUrl"
+                            title="Trailer"
+                            allowfullscreen
+                            allow="autoplay; encrypted-media"
+                            style="border: none;">
+                    </iframe>
+                </div>
+                <div class="p-4">
+                    <h5 class="fw-bold" style="color: #222;">📝 Mô tả phim</h5>
+                    <p class="text-secondary">@Model.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* MODAL CHỌN SUẤT CHIẾU GIỮ NGUYÊN *@
+<div class="modal fade" id="showtimeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">CHỌN SUẤT CHIẾU</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="booking-filters mb-4">
+                    <h5 class="text-white mb-3"><i class="bi bi-geo-alt-fill"></i> Chọn ngày & Thành phố</h5>
+                    <div class="date-scroller mb-3 d-flex gap-2">
+                        @foreach (var d in dates)
+                        {
+                            <button type="button" class="date-item" data-date="@d.ToString("yyyy-MM-dd")">
+                                <small>@d.ToString("ddd", new System.Globalization.CultureInfo("vi-VN"))</small>
+                                <strong>@d.ToString("dd/MM")</strong>
+                            </button>
+                        }
+                    </div>
+                    <div class="city-scroller d-flex gap-2">
+                        @foreach (var city in cities)
+                        {
+                            <button type="button" class="city-item" data-city="@city">@city</button>
+                        }
+                    </div>
+                </div>
+                <div id="showtimeListContainer">
+                    <div class="text-center text-muted">Vui lòng chọn ngày và thành phố để xem suất chiếu.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function renderShowtimes(data) {
+            const container = $("#showtimeListContainer");
+            container.empty();
+            if (data.length === 0) {
+                container.html('<div class="text-center text-danger">Không có suất chiếu nào.</div>');
+                return;
+            }
+            const grouped = data.reduce((acc, item) => {
+                const key = `${item.theater} - ${item.city}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(item);
+                return acc;
+            }, {});
+
+            let html = "";
+            for (const theater in grouped) {
+                html += `<div class="showtime-group"><div class="theater-header"><i class="bi bi-building"></i> ${theater}</div><div>`;
+                grouped[theater].forEach(item => {
+                    html += `<a href="/Booking/SelectSeats/${item.showtimeId}" class="showtime-button">${item.startTime}</a>`;
+                });
+                html += `</div></div>`;
+            }
+            container.html(html);
+        }
+
+        function loadShowtimes(movieId, date, city) {
+            if (!date || !city) return;
+            $.get('@Url.Action("FilterShowtimes", "Movies")', { movieId, city, date }, renderShowtimes);
+        }
+
+        $(function () {
+            let selectedCity = "";
+            let selectedDate = "";
+            const movieId = '@Model.MovieId';
+
+            $('.date-item').click(function() {
+                $('.date-item').removeClass('active'); $(this).addClass('active');
+                selectedDate = $(this).data('date');
+                loadShowtimes(movieId, selectedDate, selectedCity);
+            });
+
+            $('.city-item').click(function() {
+                $('.city-item').removeClass('active'); $(this).addClass('active');
+                selectedCity = $(this).data('city');
+                loadShowtimes(movieId, selectedDate, selectedCity);
+            });
+
+            // Star rating
+            const stars = $("#starRating .star");
+            stars.click(function() {
+                const val = $(this).data('value');
+                $("#selectedRating").val(val);
+                stars.each(function(i) { $(this).toggleClass("selected", i < val); });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,126 @@
+﻿@page
+@model CinemaManagement.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded">
+                <div class="card-header text-center text-white" style="background: linear-gradient(to right, #87CEEB, #4682B4);">
+                    <h1>Create Your Account</h1>
+                </div>
+                <div class="card-body">
+                    <form id="registerForm" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.FullName" class="form-control" autocomplete="fullname" placeholder="Full Name" />
+                            <label asp-for="Input.FullName"><i class="bi bi-person"></i> Full Name</label>
+                            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
+                            <label asp-for="Input.Email"><i class="bi bi-envelope"></i> Email</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password" type="password" class="form-control" autocomplete="new-password" placeholder="password" />
+                            <label asp-for="Input.Password"><i class="bi bi-lock"></i> Password</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.ConfirmPassword" type="password" class="form-control" autocomplete="new-password" placeholder="Confirm Password" />
+                            <label asp-for="Input.ConfirmPassword"><i class="bi bi-check-circle"></i> Confirm Password</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <!-- Chọn Role -->
+                        <div class="form-floating mb-3">
+                            <select asp-for="Input.Role" asp-items="@Model.Input.RoleList" class="form-control">
+                                <option disabled selected>Select Role</option>
+                            </select>
+                            <label for="Input.Role"><i class="bi bi-person-badge"></i> Select Role</label>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-lg text-white" style="background: linear-gradient(to right, #00c6ff, #0072ff); border-radius: 25px;">
+                            <i class="bi bi-person-plus"></i> Register
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <p>Already have an account? <a href="/Identity/Account/Login" class="text-primary">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Secret Modal -->
+<div class="modal fade" id="adminSecretModal" tabindex="-1" aria-labelledby="adminSecretModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enter Admin Secret Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="adminSecretInput">Secret Code</label>
+                    <input type="password" class="form-control" id="adminSecretInput" name="AdminSecret" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="submitRegister">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const roleSelect = document.querySelector("[name='Input.Role']");
+            const secretInput = document.getElementById("adminSecretInput");
+            const submitBtn = document.getElementById("registerSubmit");
+            const submitModalBtn = document.getElementById("submitRegister");
+            const form = document.getElementById("registerForm");
+
+            // Khi bấm Register
+            submitBtn.addEventListener("click", function (e) {
+                if (roleSelect.value === "Admin" && secretInput.value.trim() === "") {
+                    e.preventDefault();
+                    const modal = new bootstrap.Modal(document.getElementById('adminSecretModal'));
+                    modal.show();
+                }
+            });
+
+            // Khi bấm Submit trong modal
+            submitModalBtn.addEventListener("click", function () {
+                const secret = secretInput.value.trim();
+                if (secret !== "") {
+                    const hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = "AdminSecret";
+                    hidden.value = secret;
+                    form.appendChild(hidden);
+                    form.submit();
+                }
+            });
+
+            @if (Model.ShowAdminPopup)
+            {
+                    <text>
+                        var modal = new bootstrap.Modal(document.getElementById('adminSecretModal'));
+                        modal.show();
+                    </text>
+            }
+        });
+    </script>
+}

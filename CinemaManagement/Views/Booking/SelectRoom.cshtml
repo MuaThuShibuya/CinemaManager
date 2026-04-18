@@ -1,0 +1,84 @@
+﻿@model CinemaManagement.ViewModels.BookingViewModel
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">🎬 Chọn Phòng Chiếu</h2>
+
+                    @if (Model?.Showtimes?.FirstOrDefault()?.Movie != null)
+                    {
+                        var movie = Model.Showtimes.First().Movie;
+                        <div class="text-center mb-4">
+                            <h4 class="text-primary">@movie.Title</h4>
+                            <p class="text-muted">
+                                <i class="fas fa-clock"></i>
+                                @Model.Showtimes.First().StartTime.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+                        </div>
+                    }
+
+                    <!-- Kiểm tra nếu có Rooms -->
+                    @if (Model?.Rooms?.Any() != true)
+                    {
+                        <div class="alert alert-warning text-center">
+                            <strong>Không có phòng chiếu nào!</strong> Xin vui lòng thử lại sau.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            @foreach (var room in Model.Rooms)
+                            {
+                                <div class="col">
+                                    <div class="card h-100 room-card">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Phòng @room.Name</h5>
+                                            <p class="card-text text-muted">@room.Description</p>
+                                            <p class="card-text">
+                                                <span class="badge bg-primary">
+                                                    Hệ số giá: @(room.PriceMultiplier?.ToString("0.##") ?? "Chưa có")
+
+                                                </span>
+                                            </p>
+                                            <a href="@Url.Action("SelectSeats", "Booking", new {
+                                                showtimeId = Model.Showtimes.First().ShowtimeId,
+                                                roomId = room.RoomId
+                                            })"
+                                               class="btn btn-primary w-100">
+                                                Chọn Phòng Này
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .room-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        cursor: pointer;
+    }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+    .card-title {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+</style>

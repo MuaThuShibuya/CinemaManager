@@ -1,0 +1,347 @@
+﻿@model CinemaManagement.ViewModels.EditRoomViewModel
+@using CinemaManagement.Models
+
+@{
+    ViewData["Title"] = "Chỉnh sửa phòng";
+
+    var priceMap = Model.SeatTypePrices
+        .GroupBy(p => p.SeatType)
+        .ToDictionary(g => g.Key, g => g.First().Price);
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .text-gray-box {
+        background: #6c757d;
+        color: #fff !important;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .text-yellow-box {
+        background: #f1c40f;
+        color: #000 !important;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .text-pink-box {
+        background: #d63384;
+        color: #fff !important;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    body {
+        background: #0b0b0b;
+        color: #fff;
+    }
+
+    .container {
+        max-width: 1500px;
+        margin-top: 20px;
+    }
+
+    .panel {
+        background: #141414;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 12px 32px rgba(0,0,0,.75);
+    }
+
+    .screen {
+        background: radial-gradient(ellipse at center,#f8f8f8 0%,#cfcfcf 70%);
+        color: #000;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-align: center;
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+    }
+
+    .seat-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .seat {
+        width: 72px;
+        height: 72px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        font-weight: 900;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        position: relative;
+        transition: transform .08s ease, box-shadow .08s ease;
+    }
+
+        .seat:hover {
+            transform: scale(1.06);
+            box-shadow: 0 6px 16px rgba(0,0,0,.6);
+        }
+
+        .seat small {
+            font-size: .75rem;
+            opacity: .95;
+        }
+
+    .seat-regular {
+        background: #6c757d;
+    }
+
+    .seat-vip {
+        background: #f1c40f;
+        color: #000;
+    }
+
+    .seat-couple {
+        background: #d63384;
+    }
+
+    .seat-selected {
+        outline: 4px solid #00e5ff;
+        transform: scale(1.12);
+    }
+
+    .seat-label {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: .6rem;
+        font-weight: 900;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: rgba(0,0,0,.6);
+        color: #fff;
+    }
+
+    .seat-vip .seat-label {
+        background: #f1c40f;
+        color: #000;
+    }
+
+    .seat-couple .seat-label {
+        background: #d63384;
+    }
+
+    .legend {
+        background: #0f0f0f;
+        border-radius: 12px;
+        padding: 14px;
+        margin-top: 14px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: .95rem;
+        margin-bottom: 6px;
+    }
+
+    .legend-box {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+    }
+
+    .r {
+        background: #6c757d;
+    }
+
+    .v {
+        background: #f1c40f;
+    }
+
+    .c {
+        background: #d63384;
+    }
+
+    .btn-type.active {
+        box-shadow: 0 0 0 2px #0dcaf0 inset;
+    }
+</style>
+
+<div class="container">
+    <h3 class="mb-3">🎬 Chỉnh sửa phòng: <span class="text-warning">@Model.RoomName</span></h3>
+
+    <div class="row g-3">
+        <!-- LEFT -->
+        <div class="col-md-4">
+
+            <div class="panel mb-3">
+                <h5>Thông tin phòng</h5>
+                <form asp-action="EditRoom" method="post">
+                    <input type="hidden" asp-for="RoomId" />
+                    <label>Tên phòng</label>
+                    <input class="form-control mb-2" asp-for="RoomName" />
+                    <label>Mô tả</label>
+<textarea class="form-control mb-2" asp-for="Description"></textarea>
+                    <label>Hệ số giá</label>
+                    <input class="form-control mb-3" asp-for="PriceMultiplier" />
+                    <button class="btn btn-success w-100"><i class="bi bi-save"></i> Lưu</button>
+                </form>
+            </div>
+
+            <div class="panel mb-3">
+                <h6>Phụ thu theo loại ghế (VNĐ)</h6>
+
+                <label class="text-gray-box">Ghế thường</label>
+                <input id="inputRegular" class="form-control mb-2"
+                       value="@((priceMap.ContainsKey("Regular") ? priceMap["Regular"] : 0).ToString("N0"))" />
+
+                <label class="text-yellow-box">Ghế VIP</label>
+                <input id="inputVip" class="form-control mb-2"
+                       value="@((priceMap.ContainsKey("Vip") ? priceMap["Vip"] : 0).ToString("N0"))" />
+
+                <label class="text-pink-box">Ghế đôi</label>
+                <input id="inputCouple" class="form-control mb-3"
+                       value="@((priceMap.ContainsKey("Couple") ? priceMap["Couple"] : 0).ToString("N0"))" />
+
+                <button id="savePrices" class="btn btn-primary w-100">
+                    <i class="bi bi-cash-coin"></i> Lưu phụ thu
+                </button>
+            </div>
+
+            <div class="panel">
+                <h6>Loại ghế</h6>
+                <div class="btn-group w-100 mb-2">
+                    <button class="btn btn-outline-light btn-type active" data-type="Regular">Thường</button>
+                    <button class="btn btn-outline-warning btn-type" data-type="Vip">VIP</button>
+                    <button class="btn btn-outline-danger btn-type" data-type="Couple">Đôi</button>
+                </div>
+
+                <button id="applyType" class="btn btn-info w-100 mb-2">Áp loại</button>
+                <button id="clearSelection" class="btn btn-outline-light w-100">Bỏ chọn</button>
+
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-box r"></div> Ghế thường</div>
+                    <div class="legend-item"><div class="legend-box v"></div> Ghế VIP</div>
+                    <div class="legend-item"><div class="legend-box c"></div> Ghế đôi</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-md-8">
+            <div class="panel">
+                <div class="screen">MÀN HÌNH</div>
+
+                <div id="seatLayout" class="seat-layout">
+                    @{
+                        int perRow = 8;
+                        for (int i = 0; i < Model.Seats.Count; i += perRow)
+                        {
+                            <div class="d-flex justify-content-center gap-3">
+                                @foreach (var seat in Model.Seats.Skip(i).Take(perRow))
+                                {
+                                    var type = seat.SeatType.ToString();
+                                    var css = type == "Vip" ? "seat-vip" : type == "Couple" ? "seat-couple" : "seat-regular";
+                                    var price = priceMap.ContainsKey(type) ? priceMap[type] : 0;
+                                    <button type="button" class="seat @css"
+                                            data-id="@seat.SeatId"
+                                            data-type="@type">
+                                        <span class="seat-label">
+                                            @(type == "Vip" ? "VIP" : type == "Couple" ? "ĐÔI" : "THƯỜNG")
+                                        </span>
+                                        @seat.SeatNumber
+                                        <small data-price>+@price.ToString("N0") đ</small>
+                                    </button>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const seatLayout = document.getElementById('seatLayout');
+        const selectedSeats = new Set();
+        let selectedType = 'Regular';
+
+        const formatVnd = v => v.toLocaleString('vi-VN') + ' đ';
+
+        const priceMap = {
+        Regular: parseInt(inputRegular.value.replace(/\D/g,''))||0,
+        Vip: parseInt(inputVip.value.replace(/\D/g,''))||0,
+        Couple: parseInt(inputCouple.value.replace(/\D/g,''))||0
+        };
+
+        seatLayout.addEventListener('pointerdown',e=>{
+        const seat = e.target.closest('.seat');
+        if(!seat) return;
+        e.preventDefault();
+        const id = Number(seat.dataset.id);
+        seat.classList.toggle('seat-selected');
+        selectedSeats.has(id)?selectedSeats.delete(id):selectedSeats.add(id);
+        });
+
+        document.querySelectorAll('.btn-type').forEach(b=>{
+        b.onclick=()=>{
+        document.querySelectorAll('.btn-type').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        selectedType=b.dataset.type;
+        };
+        });
+
+        applyType.onclick=()=>{
+        if(!selectedSeats.size) return alert('Chưa chọn ghế');
+        fetch('@Url.Action("UpdateSeatType", "ManageSeat")',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({SeatIds:[...selectedSeats],SeatType:selectedType})
+        })
+        .then(r=>r.json())
+        .then(r=>{
+        if(!r.success) return alert('Lỗi');
+        document.querySelectorAll('.seat-selected').forEach(s=>{
+        s.className='seat seat-'+selectedType.toLowerCase();
+        s.dataset.type=selectedType;
+        s.querySelector('.seat-label').innerText=
+        selectedType==='Vip'?'VIP':selectedType==='Couple'?'ĐÔI':'THƯỜNG';
+        s.querySelector('[data-price]').innerText='+'+formatVnd(priceMap[selectedType]);
+        s.classList.remove('seat-selected');
+        });
+        selectedSeats.clear();
+        });
+        };
+
+        clearSelection.onclick=()=>{
+        selectedSeats.clear();
+        document.querySelectorAll('.seat-selected').forEach(s=>s.classList.remove('seat-selected'));
+        };
+
+        savePrices.onclick=()=>{
+        fetch('@Url.Action("UpdatePrices", "ManageSeat")',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+        RoomId:@Model.RoomId,
+        Regular:parseInt(inputRegular.value.replace(/\D/g,''))||0,
+        Vip:parseInt(inputVip.value.replace(/\D/g,''))||0,
+        Couple:parseInt(inputCouple.value.replace(/\D/g,''))||0
+        })
+        }).then(()=>location.reload());
+        };
+    </script>
+}

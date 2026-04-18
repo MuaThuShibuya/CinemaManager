@@ -1,0 +1,221 @@
+﻿@model IEnumerable<CinemaManagement.Models.Theater>
+@{
+    ViewData["Title"] = "Danh sách rạp chiếu";
+    var cities = Model.Select(t => t.City).Distinct().OrderBy(c => c).ToList();
+    var query = Context.Request.Query;
+    var selectedCity = query["city"].FirstOrDefault() ?? cities.FirstOrDefault();
+    var filteredTheaters = Model.Where(t => t.City == selectedCity).ToList();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+    .city-filter-bar {
+        margin-bottom: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .city-btn {
+        background: #222;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .city-btn.active, .city-btn:focus {
+        background: #ff4d4d;
+        color: #fff;
+    }
+    .theater-card {
+        background: #1c1c1c;
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255,0,0,0.15);
+        margin-bottom: 24px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .theater-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #ff4d4d;
+    }
+    .theater-location {
+        font-size: 1rem;
+        color: #ffcccc;
+    }
+    .theater-city {
+        font-size: 0.95rem;
+        color: #ffb3b3;
+    }
+    .action-btns {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn-edit {
+        background: #fff;
+        color: #222;
+        border-radius: 20px;
+        padding: 6px 18px;
+        border: none;
+        font-weight: 500;
+    }
+    .btn-edit:hover {
+        background: #ff4d4d;
+        color: #fff;
+    }
+    .btn-delete {
+        background: #ff4d4d;
+        color: #fff;
+        border-radius: 20px;
+        padding: 6px 18px;
+        border: none;
+        font-weight: 500;
+    }
+    .btn-delete:hover {
+        background: #222;
+        color: #fff;
+    }
+    .btn-add-room {
+        background: #ffc107;
+        color: #222;
+        border-radius: 20px;
+        padding: 6px 18px;
+        border: none;
+        font-weight: 500;
+    }
+    .btn-add-room:hover {
+        background: #ff4d4d;
+        color: #fff;
+    }
+    .btn-details {
+        background: #0dcaf0;
+        color: #222;
+        border-radius: 20px;
+        padding: 6px 18px;
+        border: none;
+        font-weight: 500;
+    }
+    .btn-details:hover {
+        background: #0a58ca;
+        color: #fff;
+    }
+    /* ===== CGV ADD BUTTON ===== */
+    .btn-cgv-add {
+        background: linear-gradient(135deg, #ff4d6d, #ff1f4b);
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 30px;
+        font-size: 1.05rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 0 0 rgba(255, 77, 109, 0.6);
+        transition: all 0.3s ease;
+        border: none;
+    }
+    /*Nút thêm rạp*/
+        .btn-cgv-add:hover {
+            color: #fff;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 10px rgba(255, 77, 109, 0.6), 0 0 25px rgba(255, 77, 109, 0.4);
+            background: linear-gradient(135deg, #ff1f4b, #ff4d6d);
+        }
+
+        /* Click */
+        .btn-cgv-add:active {
+            transform: scale(0.97);
+        }
+
+        /* Icon animation nhẹ */
+        .btn-cgv-add i {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-cgv-add:hover i {
+            transform: rotate(90deg);
+        }
+</style>
+
+<h2 class="mb-4"><i class="bi bi-building"></i> Danh sách rạp chiếu</h2>
+
+<div class="city-filter-bar">
+    @foreach (var city in cities)
+    {
+        <button type="button" class="city-btn @(city == selectedCity ? "active" : "")" data-city="@city">@city</button>
+    }
+</div>
+
+<div id="theaterList">
+    @if (!filteredTheaters.Any())
+    {
+        <div class="alert alert-warning">Không có rạp nào trong thành phố này.</div>
+    }
+    else
+    {
+        foreach (var theater in filteredTheaters)
+        {
+            <div class="theater-card @(theater.IsActive ? "" : "inactive-theater")">
+                <div class="theater-title">
+                    <i class="bi bi-film"></i> @theater.Name
+                    @if (theater.IsActive)
+                    {
+                        <span class="badge bg-success">Đang hoạt động</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Ngừng hoạt động</span>
+                    }
+                </div>
+                <div class="theater-city"><i class="bi bi-geo-alt"></i> Thành phố: @theater.City</div>
+                <div class="theater-location"><i class="bi bi-pin-map"></i> Địa điểm: @theater.Location</div>
+                <div class="action-btns">
+                    <a asp-action="Details" asp-route-id="@theater.TheaterId" class="btn-details"><i class="bi bi-info-circle"></i> Chi tiết</a>
+                    <a asp-action="Edit" asp-route-id="@theater.TheaterId" class="btn-edit"><i class="bi bi-pencil"></i> Sửa</a>
+                    @if (theater.IsActive)
+                    {
+                        <a asp-action="Disable" asp-route-id="@theater.TheaterId" class="btn-delete"><i class="bi bi-power"></i> Ngừng hoạt động</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Enable" asp-route-id="@theater.TheaterId" class="btn-delete" style="background: #28a745;"><i class="bi bi-play-circle"></i> Bật lại</a>
+                    }
+                    <a asp-action="CreateRoom" asp-route-theaterId="@theater.TheaterId" class="btn-add-room"><i class="bi bi-plus-square"></i> Thêm phòng</a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="mt-4 text-center">
+    <a asp-action="Create" class="btn-cgv-add">
+        <i class="bi bi-plus-circle"></i> Thêm rạp mới
+    </a>
+</div>
+
+
+@section Scripts {
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.city-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const city = btn.getAttribute('data-city');
+                const params = new URLSearchParams(window.location.search);
+                params.set('city', city);
+                window.location.search = params.toString();
+            });
+        });
+    });
+</script>
+}

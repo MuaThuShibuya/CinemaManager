@@ -1,0 +1,143 @@
+@model CinemaManagement.Models.Combo
+
+@{
+    ViewData["Title"] = "Sửa Combo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Sửa Combo</h1>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Thông tin Combo</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="ComboId" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label fw-bold"></label>
+                                <input asp-for="Name" class="form-control" placeholder="Ví dụ: Combo Bắp Nước" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label fw-bold"></label>
+                                <div class="input-group">
+                                    <input asp-for="Price" class="form-control" type="number" step="1000" min="0" />
+                                    <span class="input-group-text">VND</span>
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả chi tiết combo..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label fw-bold"></label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+                        <div class="form-text">Nhập URL hình ảnh của combo</div>
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="IsAvailable" />
+                            <label class="form-check-label fw-bold" asp-for="IsAvailable">
+                                @Html.DisplayNameFor(model => model.IsAvailable)
+                            </label>
+                        </div>
+                        <div class="form-text">Bỏ chọn nếu muốn tạm ngừng bán combo này</div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Xem trước</h5>
+            </div>
+            <div class="card-body">
+                <div id="preview-card" class="card h-100">
+                    <div id="preview-image" class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
+                    <div class="card-body">
+                        <h6 id="preview-name" class="card-title">Tên combo</h6>
+                        <p id="preview-description" class="card-text small">Mô tả combo</p>
+                        <p id="preview-price" class="card-text fw-bold text-primary">0 VND</p>
+                        <span id="preview-status" class="badge bg-success">Đang bán</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Live preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('Name');
+            const descriptionInput = document.getElementById('Description');
+            const priceInput = document.getElementById('Price');
+            const imageInput = document.getElementById('ImageUrl');
+            const availableInput = document.getElementById('IsAvailable');
+
+            function updatePreview() {
+                document.getElementById('preview-name').textContent = nameInput.value || 'Tên combo';
+                document.getElementById('preview-description').textContent = descriptionInput.value || 'Mô tả combo';
+                document.getElementById('preview-price').textContent = (priceInput.value ? parseInt(priceInput.value).toLocaleString() : '0') + ' VND';
+
+                const statusBadge = document.getElementById('preview-status');
+                if (availableInput.checked) {
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.textContent = 'Đang bán';
+                } else {
+                    statusBadge.className = 'badge bg-secondary';
+                    statusBadge.textContent = 'Ngừng bán';
+                }
+
+                const previewImage = document.getElementById('preview-image');
+                if (imageInput.value) {
+                    previewImage.innerHTML = `<img src="${imageInput.value}" class="card-img-top" style="height: 150px; object-fit: cover;" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-image fa-2x text-muted\\'></i>'">`;
+                } else {
+                    previewImage.innerHTML = '<i class="fas fa-image fa-2x text-muted"></i>';
+                }
+            }
+
+            nameInput.addEventListener('input', updatePreview);
+            descriptionInput.addEventListener('input', updatePreview);
+            priceInput.addEventListener('input', updatePreview);
+            imageInput.addEventListener('input', updatePreview);
+            availableInput.addEventListener('change', updatePreview);
+
+            updatePreview(); // Initial update
+        });
+    </script>
+}

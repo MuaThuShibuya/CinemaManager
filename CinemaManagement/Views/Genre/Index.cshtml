@@ -1,0 +1,124 @@
+﻿@model IEnumerable<CinemaManagement.Models.Genre>
+@{
+    ViewData["Title"] = "Thể loại";
+}
+
+<!-- CSS tùy chỉnh phong cách cinema -->
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .btn-add-genre {
+        background-color: #c82333; /* đỏ đậm */
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-add-genre:hover {
+            background-color: black;
+            color: white;
+        }
+
+    .table-cinema th {
+        background-color: #343a40;
+        color: white;
+        text-align: center;
+    }
+
+    .table-cinema td {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+    }
+
+        .btn-danger:hover, .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+    .modal-header {
+        background-color: #8B0000;
+        color: white;
+    }
+
+    .modal-footer button {
+        min-width: 90px;
+    }
+</style>
+
+<div class="container py-4">
+    <h2 class="mb-4 text-dark text-center fw-bold">📚 Danh sách thể loại</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <a asp-action="Create" class="btn btn-add-genre mb-3">➕ Thêm thể loại</a>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <table class="table table-bordered table-hover table-cinema mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Tên thể loại</th>
+                        <th style="width: 180px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var genre in Model)
+                    {
+                        <tr>
+                            <td>@genre.GenreId</td>
+                            <td class="fw-semibold">@genre.Name</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@genre.GenreId" class="btn btn-sm btn-primary me-2">✏️ Sửa</a>
+
+                                <!-- Nút mở modal xoá -->
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal_@genre.GenreId">
+                                    🗑️ Xoá
+                                </button>
+
+                                <!-- Modal xác nhận xoá -->
+                                <div class="modal fade" id="deleteModal_@genre.GenreId" tabindex="-1" aria-labelledby="deleteModalLabel_@genre.GenreId" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form asp-action="DeleteConfirmed" method="post">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel_@genre.GenreId">Xác nhận xoá</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                                                </div>
+                                                <div class="modal-body text-start">
+                                                    Bạn có chắc muốn xoá thể loại <strong>@genre.Name</strong> không?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <input type="hidden" name="genreId" value="@genre.GenreId" />
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                                                    <button type="submit" class="btn btn-danger">Xoá</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

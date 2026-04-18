@@ -1,0 +1,129 @@
+﻿@model CinemaManagement.ViewModels.RoomFormViewModel
+@{
+    ViewData["Title"] = "Thêm phòng chiếu";
+    var debugModel = Model ?? new CinemaManagement.ViewModels.RoomFormViewModel();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+    .form-wrapper {
+        max-width: 700px;
+        margin: 50px auto;
+    }
+
+    .custom-card {
+        background-color: #1c1c1c;
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+    }
+
+    .custom-header {
+        background-color: #000;
+        padding: 20px;
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+    }
+
+        .custom-header h3 {
+            color: #ff4d4d;
+            margin: 0;
+        }
+
+    .form-label {
+        color: #ff4d4d;
+        font-weight: bold;
+    }
+
+    .form-control {
+        background-color: #2c2c2c;
+        color: white;
+        border: 1px solid #ff4d4d;
+    }
+
+        .form-control::placeholder {
+            color: #bbbbbb;
+        }
+
+    .btn-red {
+        background-color: #ff4d4d;
+        color: #fff;
+        border: none;
+    }
+
+        .btn-red:hover {
+            background-color: #e60000;
+        }
+
+    .btn-outline-light {
+        border: 1px solid #fff;
+        color: #fff;
+    }
+
+        .btn-outline-light:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+    .text-danger {
+        color: #ff6666 !important;
+    }
+</style>
+
+<div class="form-wrapper">
+    <div class="custom-card">
+        <div class="custom-header">
+            <h3><i class="bi bi-plus-circle"></i> Thêm phòng cho rạp: @ViewBag.TheaterName</h3>
+        </div>
+        <div class="p-4">
+
+            <div class="form-group mb-3">
+                <label>Rạp: <strong>@ViewBag.TheaterName</strong></label>
+                <br />
+                <label>Thành phố: <strong>@ViewBag.TheaterCity</strong></label>
+            </div>
+
+            <form asp-action="CreateRoom" method="post">
+                <div class="mb-3">
+                    <label asp-for="RoomName" class="form-label">🏷️ Tên phòng</label>
+                    <input asp-for="RoomName" class="form-control" placeholder="Nhập tên phòng..." />
+                    <span asp-validation-for="RoomName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SeatCount" class="form-label">💺 Số lượng ghế</label>
+                    <input asp-for="SeatCount" class="form-control" placeholder="Nhập số ghế..." />
+                    <span asp-validation-for="SeatCount" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PriceMultiplier" class="form-label">💰 Hệ số giá</label>
+                    <input asp-for="PriceMultiplier" class="form-control" placeholder="VD: 1.0, 1.2..." />
+                    <span asp-validation-for="PriceMultiplier" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">📝 Mô tả</label>
+                    <textarea asp-for="Description" class="form-control" placeholder="Ghi chú mô tả (tuỳ chọn)"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <input type="hidden" asp-for="TheaterId" />
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-red px-4">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.TheaterId" class="btn btn-outline-light px-4">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

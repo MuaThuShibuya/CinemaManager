@@ -1,0 +1,108 @@
+@model CinemaManagement.ViewModels.PaymentViewModel
+
+<div class="container mt-5">
+    <h2 class="text-light text-center mb-4">💳 Thanh Toán</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h5>🧾 Tóm Tắt Đơn Hàng</h5>
+                </div>
+                <div class="card-body">
+                    <p>Tiền vé: <span class="float-end">@Model.TicketTotal.ToString("#,##0") VND</span></p>
+                    <p>Tiền combo: <span class="float-end">@Model.ComboTotal.ToString("#,##0") VND</span></p>
+                    <hr>
+                    <p class="fw-bold">Tổng cộng: <span class="float-end text-warning">@Model.GrandTotal.ToString("#,##0") VND</span></p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button id="momoPaymentBtn" class="btn btn-danger w-100 mb-2">💳 Thanh toán Momo</button>
+
+                @if (User.IsInRole("Employee"))
+                {
+                    <button id="cashPaymentBtn" class="btn btn-success w-100 mb-2">💵 Thanh toán tiền mặt</button>
+                    <button id="confirmCashBtn" class="btn btn-primary hidden mt-2 w-100">✅ Xác nhận đã thanh toán thành công</button>
+                }
+
+                <div id="loading" class="hidden mt-2 text-warning text-center">⏳ Đang xử lý...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const orderId = '@Model.OrderId';
+        const grandTotal = @Model.GrandTotal;
+
+        /* THANH TOÁN MOMO */
+        document.getElementById("momoPaymentBtn").addEventListener("click", async () => {
+            const btn = document.getElementById("momoPaymentBtn");
+            btn.disabled = true;
+            document.getElementById("loading").classList.remove("hidden");
+
+            try {
+                const qrRes = await fetch('/Booking/GetMomoQRCode', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({orderId, amount: grandTotal})
+                });
+                const qrData = await qrRes.json();
+                if(!qrData.success) throw new Error('Không lấy được QR');
+                window.location.href = qrData.qrUrl;
+            } catch(e){
+                alert("❌ " + e.message);
+            } finally {
+                btn.disabled = false;
+                document.getElementById("loading").classList.add("hidden");
+            }
+        });
+
+        /* THANH TOÁN TIỀN MẶT */
+        const cashBtn = document.getElementById("cashPaymentBtn");
+        const confirmCashBtn = document.getElementById("confirmCashBtn");
+
+        if(cashBtn){
+            cashBtn.addEventListener("click", () => {
+                confirmCashBtn.classList.remove("hidden");
+                cashBtn.disabled = true;
+            });
+
+            confirmCashBtn.addEventListener("click", async () => {
+                const btn = confirmCashBtn;
+                btn.disabled = true;
+                document.getElementById("loading").classList.remove("hidden");
+
+                try {
+                    const res = await fetch('/Booking/CashPayment', {
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({orderId})
+                    });
+                    const data = await res.json();
+                    if(!data.success) throw new Error(data.error);
+
+                    alert("💵 Thanh toán tiền mặt thành công!");
+                    window.location.href = '/Booking/PaymentSuccess?orderId=' + orderId;
+                } catch(e){
+                    alert("❌ " + e.message);
+                } finally {
+                    btn.disabled = false;
+                    document.getElementById("loading").classList.add("hidden");
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    body {
+        background: #222;
+    }
+
+    .card {
+        border: 1px solid #444;
+    }
+</style>

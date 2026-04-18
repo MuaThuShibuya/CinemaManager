@@ -1,0 +1,32 @@
+﻿@model List<CinemaManagement.ViewModels.TheaterCityGroupViewModel>
+
+<ul class="dropdown-menu" aria-labelledby="cinemaDropdown" style="min-width:260px">
+
+    @foreach (var cityGroup in Model)
+    {
+        <!-- CLICK CITY -->
+        <li>
+            <a class="dropdown-item fw-bold text-primary"
+               asp-controller="Movies"
+               asp-action="NowShowing"
+               asp-route-city="@cityGroup.City">
+                @cityGroup.City
+            </a>
+        </li>
+
+        <!-- CLICK THEATER -->
+        @foreach (var theater in cityGroup.Theaters)
+        {
+            <li>
+                <a class="dropdown-item ps-4"
+                   asp-controller="Movies"
+                   asp-action="NowShowing"
+                   asp-route-theaterId="@theater.TheaterId">
+                    @theater.Name
+                </a>
+            </li>
+        }
+
+        <li><hr class="dropdown-divider" /></li>
+    }
+</ul>

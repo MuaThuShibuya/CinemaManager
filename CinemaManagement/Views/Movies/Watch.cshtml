@@ -1,0 +1,25 @@
+﻿@model CinemaManagement.Models.Movie
+
+<h2>@Model?.Title</h2>
+<p>@Model?.Description</p>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!string.IsNullOrEmpty(Model?.VideoUrl))
+{
+    <iframe width="800" height="450"
+            src="@Model.VideoUrl"
+            frameborder="0" allowfullscreen>
+    </iframe>
+}
+else
+{
+    <div class="alert alert-warning">⚠ Không có video để hiển thị.</div>
+}

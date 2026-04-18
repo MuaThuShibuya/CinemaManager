@@ -1,0 +1,19 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h2>Đăng ký tài khoản</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>Họ và tên:</label>
+        <input type="text" name="FullName" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Email:</label>
+        <input type="email" name="Email" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Mật khẩu:</label>
+        <input type="password" name="password" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-success">Đăng ký</button>
+</form>

@@ -1,0 +1,85 @@
+﻿@model IEnumerable<CinemaManagement.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var searchQuery = Context.Request.Query["search"].ToString() ?? "";
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+}
+
+<h2 class="text-center mt-4" style="color: #0d6efd; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
+    <i class="bi bi-people-fill me-2"></i> Danh Sách Người Dùng
+</h2>
+
+
+<form method="get" asp-action="Index" class="mb-4 d-flex justify-content-end">
+    <input type="text" name="search" value="@searchQuery" class="form-control w-25 me-2" placeholder="Tìm theo tên hoặc email..." />
+    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+</form>
+
+<table class="table table-bordered table-hover text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Họ tên</th>
+            <th>Tên đăng nhập</th>
+            <th>Email</th>
+            <th>Vai trò</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int index = 1;
+            foreach (var user in Model
+            .Where(u => string.IsNullOrEmpty(searchQuery)
+            || u.FullName?.ToLower().Contains(searchQuery.ToLower()) == true
+            || u.Email?.ToLower().Contains(searchQuery.ToLower()) == true)
+            .OrderByDescending(u => userRoles[u.Id].Contains("Admin"))
+            .ThenByDescending(u => userRoles[u.Id].Contains("Company"))
+            .ThenByDescending(u => userRoles[u.Id].Contains("Employee"))
+            .ThenByDescending(u => userRoles[u.Id].Contains("Customer")))
+            {
+                <tr>
+                    <td>@index</td>
+                    <td>@(user.FullName ?? "Chưa cập nhật")</td>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @if (userRoles.ContainsKey(user.Id))
+                        {
+                            foreach (var role in userRoles[user.Id])
+                            {
+                                <span class="badge bg-secondary me-1">@role</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Không có vai trò</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="EditRoles" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-1">
+                            <i class="bi bi-pencil-square"></i> Vai trò
+                        </a>
+
+                        <form asp-action="Delete" asp-route-id="@user.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Xóa
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                index++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-muted text-center">Không tìm thấy người dùng nào.</td>
+            </tr>
+        }
+    </tbody>
+</table>

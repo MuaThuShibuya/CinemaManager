@@ -1,0 +1,29 @@
+@model CinemaManagement.Models.Theater
+
+@{
+    ViewData["Title"] = "Xác nhận vô hiệu hóa rạp";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-danger"><i class="bi bi-power"></i> Xác nhận vô hiệu hóa rạp</h2>
+
+    <div class="alert alert-danger shadow-sm">
+        <h4>Bạn có chắc chắn muốn ngừng hoạt động rạp <strong>@Model.Name</strong>?</h4>
+        <p class="mb-0">Rạp sẽ không hiển thị và không thể sử dụng cho các suất chiếu mới. Bạn có thể bật lại bất kỳ lúc nào.</p>
+    </div>
+
+    @* Gửi đến Action DisableConfirmed thông qua Alias "Disable" *@
+    <form asp-action="Disable" asp-controller="Theater" method="post">
+        @* Quan trọng: name="id" phải khớp với tham số truyền vào hàm DisableConfirmed *@
+        <input type="hidden" name="id" value="@Model.TheaterId" />
+
+        <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-danger btn-lg">
+                <i class="bi bi-check-circle"></i> Xác nhận ngừng hoạt động
+            </button>
+            <a asp-action="Index" asp-controller="Theater" class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Hủy bỏ
+            </a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,23 @@
+@model CinemaManagement.Models.Showtime
+
+@{
+    ViewData["Title"] = "Xoá suất chiếu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="text-danger">❌ Xoá suất chiếu</h2>
+
+<div class="alert alert-warning">
+    <p>Bạn có chắc chắn muốn xoá suất chiếu này?</p>
+    <ul>
+        <li><strong>Phim:</strong> @Model.Movie?.Title</li>
+        <li><strong>Rạp:</strong> @Model.Room.Theater?.Name</li>
+        <li><strong>Thời gian:</strong> @Model.StartTime.ToString("dd/MM/yyyy HH:mm")</li>
+    </ul>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <!-- <input type="hidden" asp-for="ShowtimeId" />-->
+    <button type="submit" class="btn btn-danger">🗑 Xoá</button>
+    <a asp-action="Index" class="btn btn-secondary">⬅ Huỷ</a>
+</form>

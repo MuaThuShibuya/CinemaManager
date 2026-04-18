@@ -1,0 +1,108 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var allTopRatedMovies =
+        ViewBag.TopRatedMovies as List<CinemaManagement.Models.Movie>
+        ?? new List<CinemaManagement.Models.Movie>();
+
+    // CHỈ DÙNG PHIM CÓ BANNER (16:9)
+    var topRateBanners = allTopRatedMovies
+        .Where(m => !string.IsNullOrWhiteSpace(m.BannerUrl))
+        .ToList();
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+<!-- ================= TOP RATE (BANNER 16:9) ================= -->
+<div class="py-5"
+     style="background: linear-gradient(145deg, #000000, #1a0000);
+            border-top: 4px solid #ff0033;
+            font-family: 'Bebas Neue', sans-serif;">
+
+    <div class="container text-center text-light">
+
+        <h2 class="display-5 text-uppercase mb-5"
+            style="color:#ff0033; letter-spacing:2px; text-shadow:2px 2px 8px #000;">
+            🎬 PHIM HOT TRONG RẠP
+        </h2>
+
+        @if (topRateBanners.Any())
+        {
+            <div id="topRatedMoviesCarousel"
+                 class="carousel slide shadow-lg border border-danger rounded-4 overflow-hidden"
+                 data-bs-ride="carousel"
+                 data-bs-interval="5000"
+                 style="max-width:1100px; margin:auto;">
+
+                <div class="carousel-inner">
+
+                    @for (int i = 0; i < topRateBanners.Count; i++)
+                    {
+                        var movie = topRateBanners[i];
+
+                        <div class="carousel-item @(i == 0 ? "active" : "") position-relative">
+
+                            <!-- BANNER 16:9 -->
+                            <img src="@movie.BannerUrl"
+                                 class="d-block w-100"
+                                 alt="@movie.Title"
+                                 style="height:520px; object-fit:cover; filter:brightness(65%);" />
+
+                            <!-- OVERLAY -->
+                            <div class="position-absolute top-0 start-0 w-100 h-100"
+                                 style="background:linear-gradient(to top, rgba(0,0,0,.85), transparent);">
+                            </div>
+
+                            <!-- CAPTION -->
+                            <div class="carousel-caption text-start" style="bottom:40px;">
+                                <h3 class="fw-bold"
+                                    style="color:#ffecec; font-size:2.3rem;
+                                                   text-shadow:2px 2px 6px #000;">
+                                    @movie.Title
+                                </h3>
+                                <div style="color:#ffc107; font-size:1.3rem;">
+                                    ⭐ @movie.Rating / 10
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+
+                <button class="carousel-control-prev" type="button"
+                        data-bs-target="#topRatedMoviesCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-danger rounded-circle p-3"></span>
+                </button>
+
+                <button class="carousel-control-next" type="button"
+                        data-bs-target="#topRatedMoviesCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-danger rounded-circle p-3"></span>
+                </button>
+
+            </div>
+        }
+        else
+        {
+            <div class="text-muted fs-5">
+                Chưa có phim nổi bật có banner để hiển thị.
+            </div>
+        }
+
+    </div>
+</div>
+
+<!-- ================= CTA ================= -->
+<div class="container text-center my-5">
+    <div class="d-flex justify-content-center gap-4">
+        <a href="@Url.Action("NowShowing", "Movies")"
+           class="btn btn-danger btn-lg px-5 py-3 rounded-pill fw-bold">
+            Phim đang chiếu
+        </a>
+
+        <a href="@Url.Action("ComingSoon", "Movies")"
+           class="btn btn-warning btn-lg px-5 py-3 rounded-pill fw-bold">
+            Phim sắp chiếu
+        </a>
+    </div>
+</div>

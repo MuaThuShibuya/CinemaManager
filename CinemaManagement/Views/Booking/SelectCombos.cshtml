@@ -1,0 +1,121 @@
+@using System.Globalization
+@model CinemaManagement.ViewModels.ComboSelectionViewModel
+@{
+    var vnd = new CultureInfo("vi-VN");
+}
+<div class="container mt-5">
+    <h2 class="text-light text-center mb-4">🍿 Chọn Combo Bắp Nước & Phụ Kiện</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="row">
+                @foreach (var combo in Model.AvailableCombos)
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="card bg-dark text-light h-100">
+                            <img src="@combo.ImageUrl" class="card-img-top" alt="@combo.Name" style="height: 200px; object-fit: cover;">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@combo.Name</h5>
+                                <p class="card-text">@combo.Description</p>
+                                <p class="card-text fw-bold text-warning">@combo.Price.ToString("C0", vnd)</p>
+                                <div class="mt-auto">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(@combo.Id, -1)">-</button>
+                                        <input type="number" class="form-control text-center bg-dark text-light" id="quantity_@combo.Id" value="0" min="0" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(@combo.Id, 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h5>🧾 Tóm Tắt Đơn Hàng</h5>
+                </div>
+                <div class="card-body">
+                    <p>Tiền vé: <span id="ticketTotal" class="float-end">@Model.TicketTotal.ToString("C0", vnd)</span></p>
+                    <p>Tiền combo: <span id="comboTotal" class="float-end">0 VND</span></p>
+                    <hr>
+                    <p class="fw-bold">Tổng cộng: <span id="grandTotal" class="float-end text-warning">@Model.GrandTotal.ToString("C0", vnd)</span></p>
+                </div>
+                <div class="card-footer">
+                    <button id="continueBtn" class="btn btn-primary w-100" onclick="proceedToPayment()">✅ Tiếp tục thanh toán</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const orderId = '@Model.OrderId';
+        const ticketTotal = @Model.TicketTotal;
+        let selectedCombos = {};
+
+        function changeQuantity(comboId, delta) {
+            const input = document.getElementById(`quantity_${comboId}`);
+            let qty = parseInt(input.value) + delta;
+            if (qty < 0) qty = 0;
+            input.value = qty;
+
+            if (qty > 0) {
+                selectedCombos[comboId] = qty;
+            } else {
+                delete selectedCombos[comboId];
+            }
+
+            updateTotals();
+        }
+
+        function updateTotals() {
+            let comboTotal = 0;
+            @foreach (var combo in Model.AvailableCombos)
+            {
+                @:const price_@combo.Id = @combo.Price;
+                @:if (selectedCombos[@combo.Id]) {
+                @:    comboTotal += selectedCombos[@combo.Id] * price_@combo.Id;
+                @:}
+            }
+
+            document.getElementById('comboTotal').textContent = comboTotal.toLocaleString() + ' VND';
+            document.getElementById('grandTotal').textContent = (ticketTotal + comboTotal).toLocaleString() + ' VND';
+        }
+
+        function proceedToPayment() {
+            // Store selected combos in session or send to server
+            fetch('/Booking/SaveCombos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ orderId, selectedCombos, comboTotal: parseFloat(document.getElementById('comboTotal').textContent.replace(/[^\d]/g, '')) })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/Booking/Payment?orderId=' + orderId;
+                } else {
+                    alert('Lỗi: ' + data.error);
+                }
+            })
+            .catch(e => alert('Lỗi: ' + e.message));
+        }
+    </script>
+}
+
+<style>
+    body {
+        background: #222;
+    }
+
+    .card {
+        border: 1px solid #444;
+    }
+
+    .card-img-top {
+        border-bottom: 1px solid #444;
+    }
+</style>

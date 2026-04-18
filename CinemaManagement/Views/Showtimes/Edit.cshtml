@@ -1,0 +1,67 @@
+@model CinemaManagement.Models.ShowtimeViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa suất chiếu";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="TheaterId" class="form-label"></label>
+        <select asp-for="TheaterId" class="form-control" asp-items="ViewBag.TheaterList"></select>
+        <span asp-validation-for="TheaterId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="RoomId" class="form-label"></label>
+        <select asp-for="RoomId" class="form-control" asp-items="ViewBag.RoomList"></select>
+        <span asp-validation-for="RoomId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StartTime" class="form-label"></label>
+        <input asp-for="StartTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="StartTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EndTime" class="form-label"></label>
+        <input asp-for="EndTime" class="form-control" type="datetime-local" />
+        <span asp-validation-for="EndTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="control-label">Giá tiền</label>
+        <input asp-for="Price" class="form-control" type="number" step="1" min="1" max="99999999" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Giảm giá (%)</label>
+        <input asp-for="DiscountPercent" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Từ ngày</label>
+        <input asp-for="DiscountStart" type="datetime-local" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Đến ngày</label>
+        <input asp-for="DiscountEnd" type="datetime-local" class="form-control" />
+    </div>
+
+
+    <input type="hidden" asp-for="ShowtimeId" />
+    <input type="hidden" asp-for="MovieId" />
+
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn btn-secondary">Hủy</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

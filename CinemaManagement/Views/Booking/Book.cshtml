@@ -1,0 +1,58 @@
+﻿@model List<CinemaManagement.Models.Ticket>
+
+<h2>Thanh Toán</h2>
+
+@foreach (var ticket in Model ?? new List<CinemaManagement.Models.Ticket>())
+{
+    <p><strong>Vé:</strong> @ticket.TicketId</p>
+    <p><strong>Phim:</strong> @(ticket.Showtime?.Movie?.Title ?? "Không xác định")</p>
+    <p><strong>Ghế:</strong> @(ticket.Seat != null ? "Số " + ticket.Seat.SeatId : "Chưa có ghế")</p>
+    <p><strong>Giá:</strong> @(ticket.Price.ToString("N0")) VNĐ</p>
+}
+
+<hr>
+<h2>Thanh toán bằng MoMo</h2>
+<p><strong>Tổng tiền:</strong> <span id="totalPrice">@(Model?.Sum(t => t.Price) ?? 0).ToString("N0")</span> VNĐ</p>
+
+<button id="momoPaymentBtn" class="confirm-btn">Thanh toán qua MoMo</button>
+<div id="loading" class="loading-spinner hidden"></div>
+<div id="messageBox" class="message-box hidden"></div>
+
+<script>
+    document.getElementById("momoPaymentBtn").addEventListener("click", function () {
+        let btn = this;
+        btn.disabled = true;
+        document.getElementById("loading").classList.remove("hidden");
+
+        fetch('/Booking/GetMomoQRCode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ticketIds: @Html.Raw(Json.Serialize(Model?.Select(t => t.TicketId) ?? new List<int>()))
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.qrUrl;
+            } else {
+                showMessage("Lỗi khi tạo QR thanh toán: " + data.error, "error");
+            }
+        })
+        .catch(() => showMessage("Lỗi hệ thống, vui lòng thử lại!", "error"))
+        .finally(() => {
+            btn.disabled = false;
+            document.getElementById("loading").classList.add("hidden");
+        });
+    });
+
+    function showMessage(message, type) {
+        let messageBox = document.getElementById("messageBox");
+        messageBox.textContent = message;
+        messageBox.className = `message-box ${type}`;
+        messageBox.classList.remove("hidden");
+        setTimeout(() => messageBox.classList.add("hidden"), 3000);
+    }
+</script>
+
+<hr>

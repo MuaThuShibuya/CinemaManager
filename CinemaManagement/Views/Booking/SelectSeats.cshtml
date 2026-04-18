@@ -1,0 +1,249 @@
+﻿@using System.Globalization
+@model CinemaManagement.ViewModels.SeatSelectionViewModel
+@{
+    var vnd = new CultureInfo("vi-VN");
+}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    body {
+        background: #0b0b0b;
+        color: #fff;
+    }
+
+    .screen {
+        background: radial-gradient(ellipse at center,#f8f8f8 0%,#cfcfcf 70%);
+        color: #000;
+        font-weight: 900;
+        letter-spacing: 4px;
+        text-align: center;
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .seat {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        border: none;
+        font-weight: 900;
+        cursor: pointer;
+        transition: transform .12s ease, box-shadow .12s ease;
+        position: relative;
+        color: #fff;
+    }
+
+        .seat:hover:not(.seat-booked) {
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(0,0,0,.7);
+        }
+
+    .seat-regular {
+        background: #6c757d;
+    }
+
+    .seat-vip {
+        background: #f1c40f;
+        color: #000;
+    }
+
+    .seat-couple {
+        background: #d63384;
+    }
+
+    .seat-selected {
+        outline: 4px solid #00e5ff;
+        box-shadow: 0 0 16px rgba(0,229,255,.9);
+        transform: scale(1.15);
+        z-index: 2;
+    }
+
+    .seat-booked {
+        background: #444 !important;
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .seat-label {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: .6rem;
+        font-weight: 900;
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: rgba(0,0,0,.65);
+    }
+
+    .seat-vip .seat-label {
+        background: #f1c40f;
+        color: #000;
+    }
+
+    .seat-couple .seat-label {
+        background: #d63384;
+    }
+
+    .price-box {
+        background: #1c1c1c;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 0 12px rgba(255,77,109,.25);
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-4 text-center">
+            <img src="@Model.Movie.PosterUrl" class="img-fluid rounded shadow" style="max-height:420px">
+        </div>
+        <div class="col-md-8">
+            <h3 class="text-warning mb-3">@Model.Movie.Title</h3>
+            <p><b>Phòng:</b> <span class="text-warning">@Model.Room.Name</span></p>
+            <p><b>Thời gian:</b> <span class="text-warning">@Model.Showtime.StartTime.ToString("dd/MM/yyyy HH:mm")</span></p>
+
+            <div class="price-box mt-3">
+                <p>Giá gốc: <span class="text-warning">@Model.BasePrice.ToString("C0", vnd)</span> đ</p>
+                <hr class="text-secondary" />
+                <p>Phụ thu ghế thường: <span class="text-warning">@Model.PriceRegular.ToString("C0", vnd)</span> đ</p>
+                <p>Phụ thu ghế VIP: <span class="text-warning">@Model.PriceVip.ToString("C0", vnd)</span> đ</p>
+                <p>Phụ thu ghế đôi: <span class="text-warning">@Model.PriceCouple.ToString("C0", vnd)</span> đ</p>
+
+                @if (Model.DiscountPercent.HasValue && Model.DiscountStart <= DateTime.Now && Model.DiscountEnd >= DateTime.Now)
+                {
+                    <p class="text-success fw-bold mt-2">Giảm giá @Model.DiscountPercent%</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="screen">MÀN HÌNH</div>
+
+    @{
+        int perRow = 8;
+    }
+
+    @for (int i = 0; i < Model.AvailableSeats.Count; i += perRow)
+    {
+        int rowIndex = i / perRow; // Thêm index hàng
+                                   <div class="d-flex justify-content-center gap-3 mb-2">
+            @{
+                var rowSeats = Model.AvailableSeats.Skip(i).Take(perRow).ToList();
+            }
+            @for (int colIndex = 0; colIndex < rowSeats.Count; colIndex++)
+            {
+                var seat = rowSeats[colIndex];
+                bool booked = Model.PaidSeatIds.Contains(seat.SeatId) || Model.ReservedSeatIds.Contains(seat.SeatId);
+                var type = seat.SeatType.ToString();
+                var css = type == "Vip" ? "seat-vip" : type == "Couple" ? "seat-couple" : "seat-regular";
+
+                <button class="seat @css @(booked ? "seat-booked" : "")"
+                        data-id="@seat.SeatId"
+                        data-type="@type"
+                        data-row-index="@rowIndex"
+                        data-col-index="@colIndex"
+                        @(booked ? "disabled" : "")>
+                    <span class="seat-label">
+                        @(type == "Vip" ? "VIP" : type == "Couple" ? "ĐÔI" : "THƯỜNG")
+                    </span>
+                    @seat.SeatNumber
+                </button>
+            }
+        </div>
+    }
+
+    <div class="text-center mt-4">
+        <h5>Tổng tiền: <span id="totalPrice" class="text-warning">0</span> đ</h5>
+        <button id="confirmBooking" class="btn btn-info px-4" disabled>
+            <i class="bi bi-ticket-perforated"></i> Xác nhận vé
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const basePrice = @Model.BasePrice;
+        const extra = { Regular: @Model.PriceRegular, Vip: @Model.PriceVip, Couple: @Model.PriceCouple };
+        const discountPercent = @((Model.DiscountPercent ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        const discountActive = @(Model.DiscountPercent.HasValue && Model.DiscountStart <= DateTime.Now && Model.DiscountEnd >= DateTime.Now ? "true" : "false");
+        const discountMul = discountActive ? (1 - discountPercent/100) : 1;
+
+        let selected = [];
+        const allSeats = Array.from(document.querySelectorAll(".seat"));
+
+        // --- GIỮ NGUYÊN LOGIC CHỌN GHẾ VÀ TÍNH TIỀN ---
+        document.querySelectorAll(".seat:not(.seat-booked)").forEach(s => {
+            s.onclick = () => {
+                const id = s.dataset.id;
+                s.classList.toggle("seat-selected");
+
+                selected.includes(id)
+                    ? selected = selected.filter(x => x !== id)
+                    : selected.push(id);
+
+                let total = 0;
+                selected.forEach(i => {
+                    const b = document.querySelector(`.seat[data-id='${i}']`);
+                    total += (basePrice + extra[b.dataset.type]) * discountMul;
+                });
+
+                totalPrice.innerText = Math.round(total).toLocaleString();
+                confirmBooking.disabled = !selected.length;
+            };
+        });
+
+        // --- LOGIC KIỂM TRA GHẾ LẺ (MỚI TÍCH HỢP) ---
+        function hasEdgeSeatLeft() {
+            const uniqueRows = [...new Set(allSeats.map(btn => btn.getAttribute("data-row-index")))];
+
+            for (const rowIdx of uniqueRows) {
+                const rowSeats = allSeats
+                    .filter(btn => btn.getAttribute("data-row-index") === rowIdx)
+                    .sort((a, b) => parseInt(a.getAttribute("data-col-index")) - parseInt(b.getAttribute("data-col-index")));
+
+                const rowStatus = rowSeats.map(btn => {
+                    const isBooked = btn.classList.contains("seat-booked");
+                    const isSelected = selected.includes(btn.dataset.id);
+                    return (isBooked || isSelected) ? 1 : 0;
+                });
+
+                let leftEmpty = 0;
+                for (let i = 0; i < rowStatus.length; i++) {
+                    if (rowStatus[i] === 0) leftEmpty++;
+                    else break;
+                }
+
+                let rightEmpty = 0;
+                for (let i = rowStatus.length - 1; i >= 0; i--) {
+                    if (rowStatus[i] === 0) rightEmpty++;
+                    else break;
+                }
+
+                if (leftEmpty === 1 || rightEmpty === 1) return true;
+            }
+            return false;
+        }
+
+        // --- LOGIC XÁC NHẬN (KẾT HỢP CŨ VÀ MỚI) ---
+        confirmBooking.onclick = async () => {
+            // Kiểm tra ghế lẻ trước khi gửi
+            if (hasEdgeSeatLeft()) {
+                alert("❌ Bạn không được để trống duy nhất một ghế ở đầu hàng. Vui lòng chọn thêm ghế đó hoặc bỏ chọn ghế bên cạnh!");
+                return;
+            }
+
+            const res = await fetch("/Booking/ConfirmBooking", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    showtimeId: @Model.ShowtimeId,
+                    seatIds: selected
+                })
+            });
+            const data = await res.json();
+            if (!data.success) alert(data.error);
+            else location.href = data.redirectUrl;
+        };
+    </script>
+}

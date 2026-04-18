@@ -1,0 +1,96 @@
+﻿@using System.Globalization
+@model CinemaManagement.ViewModels.RevenueStatsViewModel
+@{
+    ViewData["Title"] = "Thống kê doanh thu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var vnd = new CultureInfo("vi-VN");
+}
+
+<!-- Tailwind CSS + Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold mb-6 text-blue-600">🎬 Thống kê doanh thu</h2>
+
+    <form method="post" class="mb-6 flex flex-wrap gap-4 items-end">
+        <div>
+            <label class="block font-semibold">Từ</label>
+            <input type="date" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="border rounded px-3 py-2" />
+        </div>
+        <div>
+            <label class="block font-semibold">Đến</label>
+            <input type="date" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="border rounded px-3 py-2" />
+        </div>
+        <div>
+            <label class="block font-semibold">Phương thức</label>
+            <select name="paymentMethod" class="border rounded px-3 py-2">
+                <option value="All" selected="@(Model.PaymentMethod == "All")">Tất cả</option>
+                <option value="Momo" selected="@(Model.PaymentMethod == "Momo")">Momo</option>
+                <option value="Cash" selected="@(Model.PaymentMethod == "Cash")">Tiền mặt</option>
+            </select>
+        </div>
+        <div>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">Lọc</button>
+        </div>
+    </form>
+
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-green-100 p-4 rounded shadow">
+            <p class="font-semibold text-green-800">💰 Tổng doanh thu:</p>
+            <p class="text-2xl font-bold">@Model.TotalRevenue.ToString("C0", vnd)</p>
+        </div>
+        <div class="bg-yellow-100 p-4 rounded shadow">
+            <p class="font-semibold text-yellow-800">🎟 Số vé bán ra:</p>
+            <p class="text-2xl font-bold">@Model.TotalTickets</p>
+        </div>
+    </div>
+
+    <!-- Doanh thu theo phim -->
+    <h3 class="text-xl font-semibold mb-4 text-purple-600">Doanh thu theo phim</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        @foreach(var item in Model.ByMovie)
+        {
+            <div class="bg-white rounded-2xl shadow p-4 hover:shadow-lg transition duration-300">
+                <p class="font-semibold text-lg">@item.MovieTitle</p>
+                <p>🎟 Số vé: <span class="font-bold">@item.TicketsSold</span></p>
+                <p>💰 Doanh thu: <span class="font-bold">@item.Revenue.ToString("C0", vnd)</span></p>
+            </div>
+        }
+    </div>
+
+    <!-- Doanh thu theo rạp -->
+    <h3 class="text-xl font-semibold mb-4 text-indigo-600">Doanh thu theo rạp</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        @foreach(var item in Model.ByTheater)
+        {
+            <div class="bg-white rounded-2xl shadow p-4 hover:shadow-lg transition duration-300">
+                <p class="font-semibold text-lg">@item.TheaterName</p>
+                <p>🎟 Số vé: <span class="font-bold">@item.TicketsSold</span></p>
+                <p>💰 Doanh thu: <span class="font-bold">@item.Revenue.ToString("C0", vnd)</span></p>
+            </div>
+        }
+    </div>
+
+    <!-- Doanh thu theo suất chiếu -->
+    <h3 class="text-xl font-semibold mb-4 text-pink-600">Doanh thu theo suất chiếu</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @foreach(var item in Model.ByShowtime)
+        {
+            <div class="bg-white rounded-2xl shadow p-4 hover:shadow-lg transition duration-300">
+                <p class="font-semibold text-lg">@item.MovieTitle</p>
+                <p>🏢 Rạp: @item.TheaterName</p>
+                <p>🕒 Suất chiếu: @item.Showtime.ToString("dd/MM/yyyy HH:mm")</p>
+                <p>🎟 Số vé: <span class="font-bold">@item.TicketsSold</span></p>
+                <p>💰 Doanh thu: <span class="font-bold">@item.Revenue.ToString("C0", vnd)</span></p>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    /* Hiệu ứng fade-in khi tải */
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+</style>

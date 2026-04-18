@@ -1,0 +1,17 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Đang xử lý thanh toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center mt-5">
+    <h3>⏳ Đơn hàng đang chờ xác nhận</h3>
+    <p>Mã đơn: <strong>@Model</strong></p>
+    <p>Vui lòng chờ trong giây lát...</p>
+
+    <div class="spinner-border text-warning mt-3"></div>
+</div>
+
+<script>
+    setTimeout(() => location.reload(), 5000);
+</script>

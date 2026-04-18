@@ -1,0 +1,205 @@
+@model CinemaManagement.Models.ShowtimeViewModel
+@{
+    ViewData["Title"] = "Thêm suất chiếu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var theaters = ViewBag.Theaters as List<CinemaManagement.Models.Theater> ?? new();
+    var rooms = ViewBag.Rooms as List<CinemaManagement.Models.Room> ?? new();
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+    .form-wrapper {
+        max-width: 700px;
+        margin: 50px auto;
+    }
+
+    .custom-card {
+        background-color: #1c1c1c;
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+    }
+
+    .custom-header {
+        background-color: #000;
+        padding: 20px;
+        text-align: center;
+        border-radius: 10px 10px 0 0;
+    }
+
+        .custom-header h3 {
+            color: #ff4d4d;
+            margin: 0;
+        }
+
+    .form-label {
+        color: #ff4d4d;
+        font-weight: bold;
+    }
+
+    .form-control {
+        background-color: #2c2c2c;
+        color: white;
+        border: 1px solid #ff4d4d;
+    }
+
+        .form-control::placeholder {
+            color: #bbbbbb;
+        }
+
+    .btn-red {
+        background-color: #ff4d4d;
+        color: #fff;
+        border: none;
+    }
+
+        .btn-red:hover {
+            background-color: #e60000;
+        }
+
+    .btn-outline-light {
+        border: 1px solid #fff;
+        color: #fff;
+    }
+
+        .btn-outline-light:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+    .text-danger {
+        color: #ff6666 !important;
+    }
+</style>
+
+<div class="form-wrapper">
+    <div class="custom-card">
+        <div class="custom-header">
+            <h3><i class="bi bi-plus-circle"></i> Thêm suất chiếu mới</h3>
+        </div>
+        <div class="p-4">
+            <form asp-action="Create" method="post">
+                <input type="hidden" asp-for="MovieId" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">🏙️ Thành phố</label>
+                    <select id="citySelect" class="form-control">
+                        <option value="">-- Chọn thành phố --</option>
+                        @foreach (var city in theaters.Select(t => t.City).Distinct())
+                        {
+                            <option value="@city">@city</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">🏢 Rạp</label>
+                    <select id="theaterSelect" class="form-control">
+                        <option value="">-- Chọn rạp --</option>
+                        @foreach (var theater in theaters)
+                        {
+                            <option value="@theater.TheaterId" data-city="@theater.City">@theater.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="RoomId" class="form-label">🏷️ Phòng chiếu</label>
+                    <select asp-for="RoomId" class="form-control" id="roomSelect">
+                        <option value="">-- Chọn phòng --</option>
+                        @foreach (var room in rooms)
+                        {
+                            <option value="@room.RoomId" data-theater="@room.TheaterId">@room.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="RoomId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="StartTime" class="form-label">🕒 Thời gian bắt đầu</label>
+                    <input asp-for="StartTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EndTime" class="form-label">🕒 Thời gian kết thúc</label>
+                    <input asp-for="EndTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="EndTime" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Price" class="form-label">💰 Giá vé</label>
+                    <input asp-for="Price" class="form-control" placeholder="Nhập giá vé..." />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DiscountPercent" class="form-label">🔻 Giảm giá (%)</label>
+                    <input asp-for="DiscountPercent" class="form-control" placeholder="Nhập phần trăm giảm giá..." />
+                    <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DiscountStart" class="form-label">⏳ Bắt đầu giảm giá</label>
+                    <input asp-for="DiscountStart" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="DiscountStart" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="DiscountEnd" class="form-label">⏳ Kết thúc giảm giá</label>
+                    <input asp-for="DiscountEnd" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="DiscountEnd" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-red px-4">
+                        <i class="bi bi-save"></i> Lưu
+                    </button>
+                    <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn btn-outline-light px-4">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Filter theaters by city
+        document.getElementById('citySelect').addEventListener('change', function () {
+            var selectedCity = this.value;
+            var theaterSelect = document.getElementById('theaterSelect');
+            var roomSelect = document.getElementById('roomSelect');
+
+            // Hide theaters not in selected city
+            Array.from(theaterSelect.options).forEach(function (opt) {
+                if (!opt.value) return;
+                opt.style.display = (opt.getAttribute('data-city') === selectedCity) ? '' : 'none';
+            });
+            theaterSelect.value = '';
+
+            // Hide rooms
+            Array.from(roomSelect.options).forEach(function (opt) {
+                if (!opt.value) return;
+                opt.style.display = 'none';
+            });
+            roomSelect.value = '';
+        });
+
+        // Filter rooms by theater
+        document.getElementById('theaterSelect').addEventListener('change', function () {
+            var selectedTheater = this.value;
+            var roomSelect = document.getElementById('roomSelect');
+            Array.from(roomSelect.options).forEach(function (opt) {
+                if (!opt.value) return;
+                opt.style.display = (opt.getAttribute('data-theater') === selectedTheater) ? '' : 'none';
+            });
+            roomSelect.value = '';
+        });
+    </script>
+}

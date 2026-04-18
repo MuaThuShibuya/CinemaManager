@@ -1,0 +1,8 @@
+﻿@model List<CinemaManagement.Models.Genre>
+
+<ul class="dropdown-menu" aria-labelledby="genreDropdown">
+    @foreach (var genre in Model)
+    {
+        <li><a class="dropdown-item genre-filter" href="#" data-genre-id="@genre.GenreId">@genre.Name</a></li>
+    }
+</ul>

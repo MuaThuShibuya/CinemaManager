@@ -1,0 +1,132 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-container">
+    <div class="login-box">
+        <h2 class="text-center">Đăng nhập</h2>
+        <form id="account" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <!-- Email -->
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.Email"><i class="fa-solid fa-envelope"></i> Email</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <!-- Mật khẩu -->
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                <label asp-for="Input.Password"><i class="fa-solid fa-lock"></i> Mật khẩu</label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <!-- Ghi nhớ đăng nhập -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="Input.RememberMe" />
+                <label class="form-check-label" asp-for="Input.RememberMe">
+                    Nhớ mật khẩu
+                </label>
+            </div>
+
+            <!-- Nút đăng nhập -->
+            <button id="login-submit" type="submit" class="w-100 btn btn-primary btn-lg">Đăng nhập</button>
+
+            <!-- Các link hỗ trợ -->
+            <div class="text-center mt-3">
+                <a id="forgot-password" asp-page="./ForgotPassword">Quên mật khẩu?</a> |
+                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký tài khoản</a>
+            </div>
+        </form>
+
+        <!-- Đăng nhập với mạng xã hội -->
+        <hr>
+        <div class="text-center">
+            <h5>Hoặc đăng nhập bằng</h5>
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    @foreach (var provider in Model.ExternalLogins!)
+                    {
+                        <button type="submit" class="btn btn-outline-dark m-1" name="provider" value="@provider.Name">
+                            <i class="fa-brands fa-@provider.Name.ToLower()"></i> @provider.DisplayName
+                        </button>
+                    }
+                </form>
+            }
+            else
+            {
+                <p class="text-muted small">Chưa có dịch vụ đăng nhập ngoài nào được cấu hình.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+    /* Background gradient */
+    body {
+        background: linear-gradient(to right, #4facfe, #00f2fe);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Container chính */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    /* Hộp đăng nhập */
+    .login-box {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        width: 100%;
+    }
+
+        /* Tiêu đề */
+        .login-box h2 {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+    /* Input có icon */
+    .form-floating label i {
+        margin-right: 8px;
+        color: gray;
+    }
+
+    /* Nút đăng nhập */
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff, #00c6ff);
+        border: none;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff7eb3, #ff758c);
+            transform: scale(1.05);
+        }
+
+    /* Link hỗ trợ */
+    .text-center a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .text-center a:hover {
+            text-decoration: underline;
+        }
+</style>

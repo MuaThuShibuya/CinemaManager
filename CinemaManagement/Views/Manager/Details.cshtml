@@ -1,0 +1,95 @@
+﻿@model CinemaManagement.Models.Movie
+
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+@if (!string.IsNullOrEmpty(Model.BannerUrl))
+{
+    <div class="position-relative mb-5" style="height:420px; overflow:hidden;">
+        <img src="@Model.BannerUrl" class="w-100 h-100"
+             style="object-fit:cover; filter:brightness(60%);" />
+
+        <div class="position-absolute top-0 start-0 w-100 h-100"
+             style="background:linear-gradient(to top, rgba(0,0,0,.9), transparent);"></div>
+
+        <div class="position-absolute bottom-0 start-0 w-100 px-5 pb-4 text-light"
+             style="font-family:'Bebas Neue', sans-serif;">
+            <h1 class="display-4 fw-bold text-uppercase"
+                style="letter-spacing:2px; text-shadow:2px 2px 8px #000;">
+                @Model.Title
+            </h1>
+            <div style="font-size:1.3rem; color:#ffc107;">
+                ⭐ @Model.Rating / 10
+            </div>
+        </div>
+    </div>
+}
+
+<div class="container mb-5">
+    <div class="row g-5">
+
+        <!-- POSTER -->
+        <div class="col-md-4 text-center">
+            <img src="@Model.PosterUrl"
+                 class="img-fluid rounded-4 shadow-lg"
+                 style="max-height:520px; object-fit:cover;" />
+        </div>
+
+        <!-- INFO -->
+        <div class="col-md-8">
+            <div class="p-4 rounded-4 shadow-lg"
+                 style="background: linear-gradient(160deg, #0b0b0b, #1a0000);
+                        border-left: 5px solid #e50914;">
+
+                <h4 class="text-uppercase fw-bold mb-3"
+                    style="color:#e50914;">
+                    Nội dung phim
+                </h4>
+
+                <p class="fs-5 text-light">@Model.Description</p>
+
+                <div class="row mt-4 text-light fs-5">
+                    <div class="col-md-6 mb-2">⏱ @Model.Duration phút</div>
+                    <div class="col-md-6 mb-2">
+                        📅 @Model.ReleaseDate.ToString("dd/MM/yyyy")
+                    </div>
+                    <div class="col-12">
+                        🎭 @string.Join(", ", Model.MovieGenres.Select(g => g.Genre.Name))
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAILER -->
+        @if (!string.IsNullOrEmpty(Model.VideoUrl))
+        {
+            <div class="col-12 mt-5">
+                <h4 class="text-uppercase text-danger fw-bold mb-3">Trailer</h4>
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden shadow">
+                    <iframe src="@Model.VideoUrl"
+                            allowfullscreen
+                            allow="autoplay; encrypted-media">
+                    </iframe>
+                </div>
+            </div>
+        }
+
+        <!-- ACTION -->
+        <div class="col-12 d-flex gap-3 mt-5">
+            <a asp-action="Edit" asp-route-id="@Model.MovieId"
+               class="btn btn-danger btn-lg px-5 rounded-pill">
+                ✏️ Chỉnh sửa
+            </a>
+
+            <a asp-action="Index"
+               class="btn btn-dark btn-lg px-5 rounded-pill">
+                ⬅ Danh sách phim
+            </a>
+        </div>
+
+    </div>
+</div>
